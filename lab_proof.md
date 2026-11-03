@@ -77,6 +77,14 @@ When a user sends a free-form message to the Kleindeutschland Telegram bot:
   }
 }
 ```
+### D. Visual Proof
+
+### Telegram Bot Input & Output
+![Airtable Screenshot](EvidenceTrail/telegram_input_raw_payload.png)
+
+
+### Airtable Record Output
+![Telegram Screenshot](EvidenceTrail/airtable_destination_record_success.png)
 
 ---
 
