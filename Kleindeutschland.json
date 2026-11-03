@@ -1,0 +1,624 @@
+{
+  "name": "Kleindeutschland",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -384,
+        32
+      ],
+      "id": "c4e4b40a-5586-4e39-9643-032a6d4075e7",
+      "name": "Telegram Trigger",
+      "credentials": {
+        "telegramApi": {
+          "id": "",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        -144
+      ],
+      "id": "0e7f598d-6c5b-4c44-8082-718e749c590a",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "da0a1fb8-7fe6-4cf4-89ae-7925217c1bf2",
+              "name": "Message",
+              "value": "={{ $json.message.text }}",
+              "type": "string"
+            },
+            {
+              "id": "f1e4dfdf-f45c-43e3-9cac-d4e6470a9770",
+              "name": "Date",
+              "value": "={{ DateTime.fromSeconds($json.message.date).toISODate() }}",
+              "type": "string"
+            },
+            {
+              "id": "9e88dc40-55e1-4c46-a5f5-c37f210d1327",
+              "name": "",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -176,
+        32
+      ],
+      "id": "bc99c363-34bf-4e69-8b17-7a5126b626b1",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "=You are a German-learning assistant. The user sends a free-form note (any structure, any order) about a German word, phrase, or expression. Identify the parts by content, not position.\n\nFirst decide: is the German part a SINGLE WORD or a multi-word EXPRESSION (idiom, set phrase, collocation)?\n\nReturn ONLY valid JSON with these keys:\n- \"word\": spelled correctly, in dictionary form:\n  - Strip intensifiers and fillers (total, sehr, ganz, echt, voll, so, ziemlich, mega) from \"word\". Keep them only in the example.\n  - EXPRESSION:Convert only the conjugation to the infinitive, WITH \"zu\", and add \"sich\" and the case/preposition if the idiom needs them. \"Mach dir keinen Kopf\" → \"sich (Dat.) keinen Kopf machen (um + Akk.)\", \"Ich habe die Nase voll\" → \"die Nase voll haben\".\n  - SINGLE VERB: infinitive with \"zu\", from any conjugated form: \"verliert\" → \"zu verlieren\". Separable verbs put zu inside: \"stehe auf\" → \"aufzustehen\". Add \"sich\" if reflexive and the fixed preposition plus case if there is one: \"zu warten (auf + Akk.)\", \"zu helfen (+ Dat.)\".\n  - NOUN: nominative singular with article: \"Kinder\" → \"das Kind\".\n  - ADJECTIVE: base form. A participle used as an adjective stays as is.\n- \"meaning\": short English meaning of \"word\". Use the user's if given, else create it.\n- \"example\": ONE string, not an object. Lines separated by \\n: \"Original: <user's sentence, spelling fixed>\" (omit if none given), \"Formal: <professional German example>\", \"Informal: <Umgangssprache German example>\".\n- \"example\": ONE string, not an object. Lines separated by \\n: \"Original: <ONLY the German sentence the user wrote, spelling fixed, WITHOUT any source mention>\" (omit if none given), \"Formal: <professional German example>\", \"Informal: <Umgangssprache German example>\".\n- \"source\": any mention of where the user found it: a series, show, podcast, episode, book, video, person, website or app, usually at the end after \"-\", \"from\", \"aus\", \"source\" or similar (\"-serie Kleo\", \"easy german episode 245\"). Clean it up (\"Series: Kleo\"). Remove it from \"word\", \"meaning\" and \"example\". \"\" only if there is no such mention. Never invent one.\n\nNever return a conjugated verb in \"word\". Never replace an expression with a single word. If the note is only a sentence, pick its most useful word or expression.\nExamples: natural, max 15 words. No markdown, no extra text."
+            },
+            {
+              "content": "={{ $json.Message }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        32,
+        32
+      ],
+      "id": "237e70c1-264c-4581-857e-5b49a3d477ae",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{\n  (() => {\n    const p = JSON.parse($json.output[0].content[0].text);\n    const ex = (p.example && typeof p.example === 'object')\n      ? Object.entries(p.example).filter(([k, v]) => v).map(([k, v]) => k + ': ' + v).join('\\n')\n      : (p.example || '');\n    return {\n      word: p.word,\n      meaning: p.meaning,\n      example: ex,\n      source: p.source || '',\n      date: $('Edit Fields').item.json.Date\n    };\n  })()\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        336,
+        32
+      ],
+      "id": "d9ce3102-fd09-48cd-8171-a25a3ccac425",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "content": "#### Workflow\nTelegram Trigger → Edit Fields (date, text) → OpenAI → Edit Fields (parse, merge, add date) → Airtable (Create)",
+        "height": 80,
+        "width": 768
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -192,
+        -144
+      ],
+      "typeVersion": 1,
+      "id": "68902b17-52ed-4202-a353-7fc23a553124",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "YOUR_AIRTABLE_BASE_ID",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "YOUR_AIRTABLE_TABLE_ID",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Word": "={{ $('Edit Fields1').first().json.word }}",
+            "Meaning": "={{ $('Edit Fields1').first().json.meaning }}",
+            "Source": "={{ $('Edit Fields1').first().json.source }}",
+            "Date": "={{ $('Edit Fields1').first().json.date }}",
+            "Expression": "={{ $('Edit Fields1').first().json.example }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Word",
+              "displayName": "Word",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Meaning",
+              "displayName": "Meaning",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Expression",
+              "displayName": "Expression",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Source",
+              "displayName": "Source",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "New word",
+                  "value": "New word"
+                },
+                {
+                  "name": "Still learning",
+                  "value": "Still learning"
+                },
+                {
+                  "name": "Memorized",
+                  "value": "Memorized"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        832,
+        48
+      ],
+      "id": "6f29cf72-5cbb-46b0-86ab-2f591132e7af",
+      "name": "Create a record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "",
+          "name": "Airtable account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=Saved: {{ $json.fields.Word }}    Meaning: {{ $json.fields.Meaning }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        48
+      ],
+      "id": "0f7b17ef-0cec-4d04-9b62-50c0a0052b9c",
+      "name": "Send a text message",
+      "credentials": {
+        "telegramApi": {
+          "id": "",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "YOUR_AIRTABLE_BASE_ID",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "YOUR_AIRTABLE_TABLE_ID",
+          "mode": "id"
+        },
+        "filterByFormula": "={{ `LOWER({Word}) = LOWER(\"${$('Edit Fields1').item.json.word.replace(/\"/g, '\\\\\"')}\")` }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        512,
+        32
+      ],
+      "id": "7caefab4-2d42-40fd-b0f9-bc0e0bc45526",
+      "name": "Search records",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "",
+          "name": "Airtable account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "132d87a6-94c0-4aad-9bda-a00de6c5dd34",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        32
+      ],
+      "id": "70d6e82c-3a36-49fb-abcf-4762c0206bee",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "YOUR_AIRTABLE_BASE_ID",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "YOUR_AIRTABLE_TABLE_ID",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Expression": "={{ ($json.Example || '').includes($('Edit Fields1').item.json.example)\n  ? $json.Example\n  : ($json.Example ? $json.Example + '\\n\\n---\\n' : '') + $('Edit Fields1').item.json.example }}",
+            "id": "={{ $json.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Word",
+              "displayName": "Word",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Meaning",
+              "displayName": "Meaning",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Expression",
+              "displayName": "Expression",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Source",
+              "displayName": "Source",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "New word",
+                  "value": "New word"
+                },
+                {
+                  "name": "Still learning",
+                  "value": "Still learning"
+                },
+                {
+                  "name": "Memorized",
+                  "value": "Memorized"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        816,
+        -112
+      ],
+      "id": "b07f1909-149b-421e-bbfc-c627d00e8885",
+      "name": "Update record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "",
+          "name": "Airtable account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=Already saved, added a new example to: {{ $('Edit Fields1').item.json.word }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1024,
+        -112
+      ],
+      "id": "3ffadca5-4d0a-4169-ab52-fcfaa0f37f66",
+      "name": "Send a text message1",
+      "credentials": {
+        "telegramApi": {
+          "id": "",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Search records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a record": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search records": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Update record",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update record": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "tags": []
+}
