@@ -1,0 +1,25 @@
+{
+  "update_id": "<REDACTED_UPDATE_ID>",
+  "message": {
+    "message_id": 1,
+    "from": {
+      "id": "<REDACTED_USER_ID>",
+      "is_bot": false,
+      "first_name": "<REDACTED_SENDER>",
+      "language_code": "de"
+    },
+    "chat": {
+      "id": "<REDACTED_CHAT_ID>",
+      "type": "private"
+    },
+    "date": 1793739824,
+    "text": "/start",
+    "entities": [
+      {
+        "offset": 0,
+        "length": 6,
+        "type": "bot_command"
+      }
+    ]
+  }
+}
