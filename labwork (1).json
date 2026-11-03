@@ -1,0 +1,549 @@
+{
+  "name": "labwork",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "5e8e55b0-3deb-49b6-9e9e-f75078c901d9",
+      "name": "Telegram Trigger",
+      "webhookId": "2112afd5-7830-4ece-8584-524da43b7fb8",
+      "credentials": {
+        "telegramApi": {
+          "id": "WJ3dvinlUDiP2VbP",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "Ich diene nur Friedrich allein, also schleich di!",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        176,
+        224
+      ],
+      "id": "34798dcf-8b94-4248-a6e9-2cb267d09cfa",
+      "name": "Send a text message",
+      "webhookId": "e34c3ee6-4cca-4ac8-a7e4-4e52cb8b5e6d",
+      "credentials": {
+        "telegramApi": {
+          "id": "WJ3dvinlUDiP2VbP",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.voice.file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        528,
+        -192
+      ],
+      "id": "a1cc4d15-9ef1-470a-8a2e-c17a01dc4ee0",
+      "name": "Get a file",
+      "webhookId": "8599482b-754c-4c0f-b478-3c1c3d1263fc",
+      "credentials": {
+        "telegramApi": {
+          "id": "WJ3dvinlUDiP2VbP",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        704,
+        -192
+      ],
+      "id": "5b5e4b2f-b06c-413e-aea5-9953b323f688",
+      "name": "Transcribe a recording",
+      "credentials": {
+        "openAiApi": {
+          "id": "QidZrgtB7GOkNGwo",
+          "name": "OpenAI Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b4ded574-ecc5-4a73-97d3-8777bf071f07",
+              "name": "=inputText",
+              "value": "={{ $json.text ?? $json.message?.text ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "dd226c36-89bf-4445-82f2-6088d6ee9dcd",
+              "name": "=receivedAt",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "d06214f0-4ced-48f4-8305-9d6396b62f9a",
+              "name": "=chatId",
+              "value": "={{ String($('Telegram Trigger').item.json.message.chat.id) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        944,
+        -48
+      ],
+      "id": "6d15ddb8-e59f-4ccc-ae72-72fd85a53da5",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b4157253-1899-4f24-8716-dc4ad534def5",
+              "leftValue": "={{ $json.message.chat.id }}",
+              "rightValue": 6329129151,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        192,
+        0
+      ],
+      "id": "49db3ea4-f06f-484d-bdb8-f9ea75dac078",
+      "name": "If von mir"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0211f899-420f-4532-9701-a19ee897efe8",
+              "leftValue": "={{ $json.message.voice.file_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        400,
+        -96
+      ],
+      "id": "45c1d1f5-93ad-401e-ae4e-eaffbe6bee7a",
+      "name": "If Sprachnachricht"
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.inputText }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "Projektideen",
+              "description": "Eigene Ideen und Vorhaben, die ich entwickeln oder umsetzen möchte, beispielsweise Apps, Produkte oder persönliche Projekte."
+            },
+            {
+              "category": "Content",
+              "description": "Artikel, Videos, Bücher, Podcasts und andere Lernressourcen, die ich speichern, lesen oder ansehen möchte."
+            },
+            {
+              "category": "Sonstiges",
+              "description": "weder als content noch als projektideen klassifizierbar"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        1152,
+        -48
+      ],
+      "id": "9d4660a6-9db1-474a-8c32-7ed0ed8c122b",
+      "name": "Text Classifier"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "responsesApiEnabled": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1152,
+        160
+      ],
+      "id": "9d9071ae-ac85-4ca6-9b88-11405e5c7c9a",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "QidZrgtB7GOkNGwo",
+          "name": "OpenAI Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "Bitte sende mir nur Content oder Projektideen.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1392,
+        400
+      ],
+      "id": "bca4b4cf-b0f9-4b34-9a89-664629610d79",
+      "name": "Send a text message1",
+      "webhookId": "00a8129e-baa9-4627-926c-5a405b3ba9d7",
+      "credentials": {
+        "telegramApi": {
+          "id": "WJ3dvinlUDiP2VbP",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "405b4ab7-c404-805d-99f7-ca865f7fc19d",
+          "mode": "list",
+          "cachedResultName": "Projektideen",
+          "cachedResultUrl": "https://app.notion.com/p/405b4ab7c404805d99f7ca865f7fc19d"
+        },
+        "title": "={{ $('Edit Fields').item.json.inputText }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1504,
+        -208
+      ],
+      "id": "0dc0fa89-513e-41ac-af2f-f3697fb0aea8",
+      "name": "Create a database page",
+      "credentials": {
+        "notionApi": {
+          "id": "LwzSH7NR5mkRlicu",
+          "name": "Notion account 11"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "✅ In Content gespeichert",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1712,
+        0
+      ],
+      "id": "096593dc-67fe-4f14-9a6b-47864399daf1",
+      "name": "Send a text message2",
+      "webhookId": "4938e8c4-18ed-4668-9b23-de0208176626",
+      "credentials": {
+        "telegramApi": {
+          "id": "WJ3dvinlUDiP2VbP",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "ebfe34a4-8937-4bb4-a89b-3e5bbabb0ceb",
+          "mode": "list",
+          "cachedResultName": "Content",
+          "cachedResultUrl": "https://app.notion.com/p/ebfe34a489374bb4a89b3e5bbabb0ceb"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Link|url",
+              "ignoreIfEmpty": true,
+              "urlValue": "={{ $json.inputText }}"
+            },
+            {
+              "key": "Eingangsdatum|date",
+              "date": "={{ $now }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1504,
+        -48
+      ],
+      "id": "ac9977b7-6486-4ab2-8631-968ef3dee8b4",
+      "name": "in Content DB speichern",
+      "credentials": {
+        "notionApi": {
+          "id": "LwzSH7NR5mkRlicu",
+          "name": "Notion account 11"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "✅ unter Projektideen gespeichert",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1712,
+        -224
+      ],
+      "id": "cd609541-9596-4516-b8bc-f2a0c1f4f2f8",
+      "name": "Send a text message3",
+      "webhookId": "4938e8c4-18ed-4668-9b23-de0208176626",
+      "credentials": {
+        "telegramApi": {
+          "id": "WJ3dvinlUDiP2VbP",
+          "name": "Telegram account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "If von mir",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a file": {
+      "main": [
+        [
+          {
+            "node": "Transcribe a recording",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe a recording": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If von mir": {
+      "main": [
+        [
+          {
+            "node": "If Sprachnachricht",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Sprachnachricht": {
+      "main": [
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier": {
+      "main": [
+        [
+          {
+            "node": "Create a database page",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "in Content DB speichern",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        []
+      ]
+    },
+    "Create a database page": {
+      "main": [
+        [
+          {
+            "node": "Send a text message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "in Content DB speichern": {
+      "main": [
+        [
+          {
+            "node": "Send a text message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "d5a87179-c04c-4c1b-8f51-9bf6012e51cb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "49b42c0051ee1c04693c425c4d57eeb1072531f55d1515f0d9aeb5a5977f030a"
+  },
+  "id": "O0WD2KMbX7W3yxQd",
+  "tags": []
+}
