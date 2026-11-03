@@ -1,0 +1,216 @@
+{
+  "name": "Salon bot: Telegram → Airtable",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "dec89d23-dca2-4ef4-b227-1efaaf443e3b",
+      "name": "Telegram Trigger",
+      "webhookId": "1296509b-4657-4486-b60d-99cd3cd337e5",
+      "credentials": {
+        "telegramApi": {
+          "id": "removed",
+          "name": "Telegram – Salon Booking Bot – Barsha"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d4411baf-c96f-416c-8790-1af61a89a65b",
+              "name": "Name",
+              "value": "={{ $json.message.from.first_name }}",
+              "type": "string"
+            },
+            {
+              "id": "80252e17-7a65-4806-9614-accbf536a0dd",
+              "name": "Username",
+              "value": "={{ $json.message.from.username || ''}}",
+              "type": "string"
+            },
+            {
+              "id": "f252c1a4-9901-4afb-a2d6-766e8f82b889",
+              "name": "Message",
+              "value": "={{ $json.message.text }}",
+              "type": "string"
+            },
+            {
+              "id": "323b5bfc-86ef-4e0e-916b-31a67b19525d",
+              "name": "Chat ID",
+              "value": "={{ String($json.message.chat.id )}}",
+              "type": "string"
+            },
+            {
+              "id": "53a6ac1f-9b92-45e6-b5ed-7e5f2c40f807",
+              "name": "Timestamp",
+              "value": "={{ DateTime.fromSeconds($json.message.date).toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "364dd791-faac-4e07-914e-bb4a5d6a2554",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appvBSJfRQ4tdAYHu",
+          "mode": "list",
+          "cachedResultName": "Salon Bookings",
+          "cachedResultUrl": "https://airtable.com/appvBSJfRQ4tdAYHu"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblM6iCucWQMCdt7o",
+          "mode": "list",
+          "cachedResultName": "Messages",
+          "cachedResultUrl": "https://airtable.com/appvBSJfRQ4tdAYHu/tblM6iCucWQMCdt7o"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $json.Name }}",
+            "Username": "={{ $json.Username }}",
+            "Message": "={{ $json.Message }}",
+            "Chat ID": "={{ $json['Chat ID'] }}",
+            "Timestamp": "={{ $json.Timestamp }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Username",
+              "displayName": "Username",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Message",
+              "displayName": "Message",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Chat ID",
+              "displayName": "Chat ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "de97d658-827e-4fca-ad19-0cc2f5b1bd9a",
+      "name": "Create a record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "removed",
+          "name": "Airtable – n8n-lab – Barsha"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Create a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "2be064b5-78b2-4621-b7f8-a736becc31ff",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "49b42c0051ee1c04693c425c4d57eeb1072531f55d1515f0d9aeb5a5977f030a"
+  },
+  "id": "QJxgfCzgPzvXFW88",
+  "tags": []
+}
