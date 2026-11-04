@@ -1,0 +1,260 @@
+{
+  "name": "Bakery Order Tracker",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a28ec8f5-6515-4b9f-a073-ffe9af26703c",
+      "name": "Telegram Trigger",
+      "webhookId": "bf4769f2-341d-4e3b-aefb-69747b515504",
+      "credentials": {
+        "telegramApi": {
+          "id": "8QqHLewOi8LdvTD8",
+          "name": "Telegram account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a4755488-9c27-4a54-ae2c-a41c704855e0",
+              "name": "Sender",
+              "value": "={{ $json.message.from.first_name }}",
+              "type": "string"
+            },
+            {
+              "id": "4d6f2a0d-b607-4c48-98a3-5bc69439d3b6",
+              "name": "Message text",
+              "value": "={{ $json.message.text }}",
+              "type": "string"
+            },
+            {
+              "id": "440ee2fe-ffc5-4fec-b1a1-87b3b71e931f",
+              "name": "Chat",
+              "value": "={{ String($json.message.chat.id) }}",
+              "type": "string"
+            },
+            {
+              "id": "07ad217a-0aa2-41f1-8eaa-7aacba7c9634",
+              "name": "Timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "28e298c6-f08b-4d5f-a222-26e90988728e",
+              "name": "Status",
+              "value": "=New",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "83285cc6-5876-4f5a-9681-1db449e08389",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appYGLDSgYtN1CRSZ",
+          "mode": "list",
+          "cachedResultName": "Bakery Order Tracker",
+          "cachedResultUrl": "https://airtable.com/appYGLDSgYtN1CRSZ"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblxZbXeakxct5BYP",
+          "mode": "list",
+          "cachedResultName": "Ordeers",
+          "cachedResultUrl": "https://airtable.com/appYGLDSgYtN1CRSZ/tblxZbXeakxct5BYP"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Sender": "={{ $json.Sender }}",
+            "Message text": "={{ $json[\"Message text\"] }}",
+            "Chat": "={{ $json.Chat }}",
+            "Status": "={{ $json.Status }}",
+            "Timestamp": "2026-11-04T18:33:59.419+01:00"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Sender",
+              "displayName": "Sender",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Message text",
+              "displayName": "Message text",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Chat",
+              "displayName": "Chat",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Attachment Summary",
+              "displayName": "Attachment Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "049ee6c1-b8e8-4b23-a2d3-c49b0f454583",
+      "name": "Create a record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "52B9R2gHWQ6sOPns",
+          "name": "Airtable Personal Access Token account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "Thank you for your order! Your request has been received and recorded. We will contact you shortly.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        624,
+        0
+      ],
+      "id": "bff57502-0425-4107-b0e7-019a45478300",
+      "name": "Send a text message",
+      "webhookId": "7b5fe935-abe6-4a70-893b-f62ad669c982",
+      "credentials": {
+        "telegramApi": {
+          "id": "8QqHLewOi8LdvTD8",
+          "name": "Telegram account 4"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Create a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a record": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "c3ecd7cf-58b6-416b-813a-505be3ef4ab0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "49b42c0051ee1c04693c425c4d57eeb1072531f55d1515f0d9aeb5a5977f030a"
+  },
+  "id": "mYaUDVyZxRzjsnZv",
+  "tags": []
+}
