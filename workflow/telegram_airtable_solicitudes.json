@@ -1,0 +1,375 @@
+{
+  "name": "Solicitudes comerciales - Telegram a Airtable",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "d9133ba6-0a9d-458f-ad4c-6bd6f243ec35",
+      "name": "Telegram Trigger",
+      "webhookId": "4d6ba8c8-239c-458e-bd63-2ef65b654208",
+      "credentials": {
+        "telegramApi": {
+          "id": "NNjYOOjUqQiwbPFL",
+          "name": "Telegram - Solicitudes comerciales IA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b96c5d27-a6e5-4c12-8830-ee13496bd4b9",
+              "name": "Empresa",
+              "value": "={{ $json.message.text.split('\\n')[0].replace('Empresa:', '').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "28be330f-b466-4c05-8642-579c0ef0ea67",
+              "name": "Contacto",
+              "value": "={{ $json.message.text.split('\\n')[1].replace('Contacto:', '').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "0682e1b1-cdf4-4905-a7a3-f420c10ce000",
+              "name": "Email",
+              "value": "={{ $json.message.text.split('\\n')[2].replace('Email:', '').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "95a18d13-e58b-4470-8866-58fdc7333497",
+              "name": "Celular",
+              "value": "={{ $json.message.text.split('\\n')[3].replace('Celular:', '').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "472fd58c-296a-4fab-9bb0-e268f3ae75b1",
+              "name": "Solicitud",
+              "value": "={{ $json.message.text.split('\\n')[4].replace('Solicitud:', '').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "968c47c2-3aaf-461d-9ae2-ea61971883b0",
+              "name": "=Chat ID",
+              "value": "={{ String($json.message.chat.id) }}",
+              "type": "string"
+            },
+            {
+              "id": "8953041e-ddb7-4cf5-b5cd-88e8a5f9f7a4",
+              "name": "Timestamp",
+              "value": "={{ DateTime.fromSeconds($json.message.date).toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        432,
+        -16
+      ],
+      "id": "bbb2f861-c2da-494d-9eb3-410f98396789",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appPyoEARA69oWcsc",
+          "mode": "list",
+          "cachedResultName": "Solicitudes comerciales",
+          "cachedResultUrl": "https://airtable.com/appPyoEARA69oWcsc"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblLx3jzehdhgKhGH",
+          "mode": "list",
+          "cachedResultName": "Solicitudes",
+          "cachedResultUrl": "https://airtable.com/appPyoEARA69oWcsc/tblLx3jzehdhgKhGH"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Empresa": "={{ $json.Empresa }}",
+            "Contacto": "={{ $json.Contacto }}",
+            "Email": "={{ $json.Email }}",
+            "Celular": "={{ $json.Celular }}",
+            "Solicitud": "={{ $json.Solicitud }}",
+            "Chat ID": "={{ $json['Chat ID'] }}",
+            "Timestamp": "={{ $json.Timestamp }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Empresa",
+              "displayName": "Empresa",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Contacto",
+              "displayName": "Contacto",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Celular",
+              "displayName": "Celular",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Solicitud",
+              "displayName": "Solicitud",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Chat ID",
+              "displayName": "Chat ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        640,
+        -16
+      ],
+      "id": "71aff53c-cfde-4773-9e1b-2cd896e32407",
+      "name": "Create a record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "letras y nros",
+          "name": "Airtable - Solicitudes comerciales"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e9d427df-375d-4acc-a3c6-32435c4dc99b",
+              "leftValue": "={{ ($json.message.text ?? '').split('\\n').length }}",
+              "rightValue": 5,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "57cd3ace-13ba-4f48-8b4f-a5b53d2e5c50",
+              "leftValue": "={{ (($json.message.text ?? '').split('\\n')[0] ?? '').replace('Empresa:', '').trim() }}",
+              "rightValue": "Empresa:",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "f5d25683-4abf-4460-8751-a11ebba97eaa",
+              "leftValue": "={{ (($json.message.text ?? '').split('\\n')[1] ?? '').replace('Contacto:', '').trim() }}",
+              "rightValue": "Contacto:",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "413e4d77-0edf-403d-aaf4-dde60f239b60",
+              "leftValue": "={{ (($json.message.text ?? '').split('\\n')[2] ?? '').replace('Email:', '').trim() }}",
+              "rightValue": "Email:",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "57aa0881-3948-4cfe-9ea2-df4b99a2f95a",
+              "leftValue": "={{ (($json.message.text ?? '').split('\\n')[3] ?? '').replace('Celular:', '').trim() }}",
+              "rightValue": "Celular:",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "e44d1af8-a3c2-48d1-aaf7-cd68822535a5",
+              "leftValue": "={{ (($json.message.text ?? '').split('\\n')[4] ?? '').replace('Solicitud:', '').trim() }}",
+              "rightValue": "Solicitud:",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "dbd6a377-e145-4575-bec0-ab694a0a769b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.message.chat.id }}",
+        "text": "La solicitud no se registró, debe enviar en orden y con los valores completos:Empresa: Contacto: Email: Celular: Solicitud:  Cada etiqueta en una línea, además enviar todo en un único mensaje",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        400,
+        176
+      ],
+      "id": "efe826b0-bfb6-4996-8adc-36b2f4010305",
+      "name": "Send a text message",
+      "webhookId": "7791898a-af1e-4d93-ba8d-a20e79ff564d",
+      "credentials": {
+        "telegramApi": {
+          "id": "NNjYOOjUqQiwbPFL",
+          "name": "Telegram - Solicitudes comerciales IA"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Create a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "10937b1d-4d72-4faa-98b0-a5b305996bbb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "49b42c0051ee1c04693c425c4d57eeb1072531f55d1515f0d9aeb5a5977f030a"
+  },
+  "id": "hGzdoC7B5xTJvuqM",
+  "tags": []
+}
