@@ -1,0 +1,12 @@
+# Local secrets and credentials
+.env
+.env.*
+!.env.example
+*credentials*.json
+*.pem
+*.p12
+*.pfx
+*.key
+
+# Unsanitized workflow export
+/COPY_Week 5 - Day 1 LAB.json
