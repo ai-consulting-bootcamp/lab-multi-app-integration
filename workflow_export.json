@@ -1,0 +1,143 @@
+{
+  "name": "Ben's Support Agent (Telegram reply path only, redacted excerpt)",
+  "nodes": [
+    {
+      "parameters": { "updates": ["message"], "additionalFields": {} },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [-608, 1824],
+      "id": "6f09a6fa-1bfe-4be5-a837-aab28e9dc4aa",
+      "name": "Telegram Trigger",
+      "credentials": { "telegramApi": { "id": "REDACTED", "name": "Bens Support Bot KEY" } }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "version": 2, "leftValue": "", "caseSensitive": true, "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ String($json.message.chat.id) }}",
+              "rightValue": "<OWNER_CHAT_ID>",
+              "operator": { "type": "string", "operation": "equals" }
+            },
+            {
+              "id": "c2",
+              "leftValue": "={{ $json.message.reply_to_message.text }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "exists", "singleValue": true }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "9b92293d-0f29-4fed-bb6f-0fe5b88820c6",
+      "name": "Is Owner Reply?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [-352, 1824]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "s1",
+              "name": "sessionId",
+              "type": "string",
+              "value": "={{ ($json.message.reply_to_message.text.match(/Session:\\s*([A-Za-z0-9_-]+)/) || [])[1] || '' }}"
+            },
+            { "id": "s2", "name": "advice", "type": "string", "value": "={{ $json.message.text }}" },
+            { "id": "s3", "name": "chatId", "type": "string", "value": "={{ String($json.message.chat.id) }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9717e5bb-4aa0-4ac2-bc39-20a8dacc03d5",
+      "name": "Extract Session and Advice",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-128, 1824]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+          "conditions": [
+            {
+              "id": "d1",
+              "leftValue": "={{ $json.sessionId }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty", "singleValue": true }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b3d8cad5-4f26-470c-828d-c951c26bfd26",
+      "name": "Has Session ID?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [96, 1824]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": { "__rl": true, "mode": "id", "value": "VUetiVPZaZWZEBYA" },
+        "filters": { "conditions": [{ "keyName": "sessionId", "keyValue": "={{ $json.sessionId }}" }] },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": { "reply": "={{ $json.advice }}", "status": "answered", "delivered": false },
+          "matchingColumns": []
+        },
+        "options": {}
+      },
+      "id": "6805f1df-c6c9-4795-8ec4-dfd7a2a62b90",
+      "name": "Save Reply",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [320, 1728]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Extract Session and Advice').item.json.chatId }}",
+        "text": "=✅ Reply saved for session {{ $('Extract Session and Advice').item.json.sessionId }}. The user will see it on their next poll.",
+        "additionalFields": { "appendAttribution": false }
+      },
+      "id": "27c67a09-f0ae-4fea-b1d8-376df0c7a82e",
+      "name": "Confirm Saved",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [544, 1728],
+      "credentials": { "telegramApi": { "id": "REDACTED", "name": "Bens Support Bot KEY" } }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "⚠️ Couldn't find a session ID. Use Telegram's Reply on the original support message.",
+        "additionalFields": { "appendAttribution": false }
+      },
+      "id": "ab41a07a-93c5-4295-ad1b-55acfe3d9f61",
+      "name": "Warn No Match",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [320, 1920],
+      "credentials": { "telegramApi": { "id": "REDACTED", "name": "Bens Support Bot KEY" } }
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": { "main": [[{ "node": "Is Owner Reply?", "type": "main", "index": 0 }]] },
+    "Is Owner Reply?": { "main": [[{ "node": "Extract Session and Advice", "type": "main", "index": 0 }]] },
+    "Extract Session and Advice": { "main": [[{ "node": "Has Session ID?", "type": "main", "index": 0 }]] },
+    "Has Session ID?": {
+      "main": [
+        [{ "node": "Save Reply", "type": "main", "index": 0 }],
+        [{ "node": "Warn No Match", "type": "main", "index": 0 }]
+      ]
+    },
+    "Save Reply": { "main": [[{ "node": "Confirm Saved", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" }
+}

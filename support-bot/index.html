@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vela Support</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --panel: #fff; --text: #1a1d23; --muted: #6b7280;
+    --user: #2f5bea; --user-text: #fff; --bot: #eceef3; --human: #e3f4e8;
+    --border: #dfe2e8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #101216; --panel: #181b21; --text: #e8eaee; --muted: #8b93a1;
+      --user: #4a72f5; --user-text: #fff; --bot: #252a33; --human: #1d3a29;
+      --border: #2b303a;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { background: var(--bg); color: var(--text); font: 16px/1.45 system-ui, sans-serif; }
+
+  /* FAQ fills the page */
+  .faq { position: fixed; inset: 0; }
+  .faq iframe { width: 100%; height: 100%; border: 0; display: block; background: var(--bg); }
+
+  /* Floating launcher */
+  .launcher { position: fixed; right: 20px; bottom: 20px; z-index: 1000; width: 56px; height: 56px; padding: 0;
+              border-radius: 50%; box-shadow: 0 6px 20px rgba(0,0,0,.25); display: grid; place-items: center; }
+  .launcher svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .launcher .dot { position: absolute; top: 4px; right: 4px; width: 12px; height: 12px; border-radius: 50%;
+                   background: #ef4444; border: 2px solid var(--panel); display: none; }
+  .launcher.unread .dot { display: block; }
+
+  /* Chat window */
+  .chat { position: fixed; right: 20px; bottom: 88px; z-index: 1000; width: 360px; height: min(540px, calc(100dvh - 108px));
+          display: none; flex-direction: column; background: var(--panel); border: 1px solid var(--border);
+          border-radius: 16px; box-shadow: 0 12px 40px rgba(0,0,0,.28); overflow: hidden; }
+  .chat.open { display: flex; }
+  @media (max-width: 480px) {
+    .launcher { right: 16px; bottom: 16px; }
+    .chat { right: 16px; left: 16px; width: auto; bottom: 84px; height: min(540px, calc(100dvh - 100px)); }
+  }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 8px;
+           padding: 12px 14px; border-bottom: 1px solid var(--border); font-weight: 600; }
+  header small { display: block; font-weight: 400; color: var(--muted); font-size: 13px; }
+  .close { width: 32px; height: 32px; padding: 0; background: transparent; color: var(--muted); font-size: 22px; line-height: 1; }
+  .close:hover { color: var(--text); }
+  #log { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .msg { max-width: 85%; padding: 10px 14px; border-radius: 14px; white-space: pre-wrap; word-wrap: break-word; }
+  .msg.user { align-self: flex-end; background: var(--user); color: var(--user-text); border-bottom-right-radius: 4px; }
+  .msg.bot { align-self: flex-start; background: var(--bot); border-bottom-left-radius: 4px; }
+  .msg.human { align-self: flex-start; background: var(--human); border-bottom-left-radius: 4px; }
+  .label { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+  form { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--border); }
+  input { flex: 1; min-width: 0; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border);
+          background: var(--bg); color: var(--text); font: inherit; }
+  button { padding: 0 18px; border: 0; border-radius: 10px; background: var(--user); color: var(--user-text);
+           font: inherit; font-weight: 600; cursor: pointer; }
+  button:disabled { opacity: .5; cursor: default; }
+</style>
+</head>
+<body>
+<div class="faq">
+  <iframe src="https://benmayer.notion.site/ebd/40dc7c22147880edac4aece71cb1ca8f?v=40dc7c22147880909f20000cefb4ee6f"
+          title="Vela FAQ" loading="eager" allowfullscreen></iframe>
+</div>
+
+<button class="launcher" id="launcher" aria-label="Open support chat" aria-expanded="false" aria-controls="chat">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>
+  <span class="dot"></span>
+</button>
+
+<section class="chat" id="chat" role="dialog" aria-label="Vela Support chat">
+  <header>
+    <div>Vela Support <small>AI assistant, with a human on standby</small></div>
+    <button class="close" id="close" aria-label="Close chat" type="button">&times;</button>
+  </header>
+  <div id="log" aria-live="polite"></div>
+  <form id="form">
+    <input id="input" placeholder="Ask a question…" autocomplete="off" required maxlength="1000">
+    <button id="send">Send</button>
+  </form>
+</section>
+
+<script>
+// ---- Config: swap these if the n8n URLs change ----
+const CHAT_URL = "https://ac-ft-26-10-05.n8n.irn.hk/webhook/2808825a-463d-47d9-855d-2e74ce81065d/chat";
+const POLL_URL = "https://ac-ft-26-10-05.n8n.irn.hk/webhook/support-replies";
+const POLL_EVERY_MS = 5000;
+const POLL_MAX_MS = 30 * 60 * 1000; // stop polling 30 min after the last user message
+
+// ---- Session: one id per browser tab. Telegram replies are matched on this id. ----
+let sessionId = sessionStorage.getItem("vela-session");
+if (!sessionId) { sessionId = crypto.randomUUID(); sessionStorage.setItem("vela-session", sessionId); }
+
+const log = document.getElementById("log");
+const form = document.getElementById("form");
+const input = document.getElementById("input");
+const sendBtn = document.getElementById("send");
+let pollTimer = null, pollUntil = 0;
+
+const launcher = document.getElementById("launcher");
+const chat = document.getElementById("chat");
+function setOpen(open) {
+  chat.classList.toggle("open", open);
+  launcher.setAttribute("aria-expanded", String(open));
+  launcher.setAttribute("aria-label", open ? "Close support chat" : "Open support chat");
+  if (open) { launcher.classList.remove("unread"); log.scrollTop = log.scrollHeight; input.focus(); }
+}
+launcher.addEventListener("click", () => { autoOpen = false; setOpen(!chat.classList.contains("open")); });
+// Open by default after a short delay, unless the visitor already interacted with the launcher.
+let autoOpen = true;
+setTimeout(() => { if (autoOpen && !chat.classList.contains("open")) setOpen(true); }, 2000);
+document.getElementById("close").addEventListener("click", () => { setOpen(false); launcher.focus(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && chat.classList.contains("open")) { setOpen(false); launcher.focus(); } });
+
+function addMsg(kind, text, label) {
+  const el = document.createElement("div");
+  el.className = "msg " + kind;
+  if (label) { const l = document.createElement("div"); l.className = "label"; l.textContent = label; el.append(l); }
+  const body = document.createElement("span");
+  body.textContent = text;           // textContent, never innerHTML: no XSS from model or human output
+  el.append(body);
+  log.append(el);
+  log.scrollTop = log.scrollHeight;
+  return body;
+}
+
+// n8n streaming returns JSON lines: {"type":"begin"|"item"|"end", "content":"..."}
+// Non-streaming returns one JSON object with `output`. Handle both.
+async function askBot(text, onChunk) {
+  const res = await fetch(CHAT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "sendMessage", sessionId, chatInput: text }),
+  });
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  const reader = res.body.getReader();
+  const dec = new TextDecoder();
+  let buf = "", full = "";
+  const handle = (line) => {
+    if (!line.trim()) return;
+    let obj; try { obj = JSON.parse(line); } catch { return; }
+    if (obj.type === "item" && typeof obj.content === "string") { full += obj.content; onChunk(full); }
+    else if (typeof obj.output === "string") { full = obj.output; onChunk(full); }
+  };
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    const lines = buf.split("\n"); buf = lines.pop();
+    lines.forEach(handle);
+  }
+  handle(buf);
+  return full;
+}
+
+async function pollOnce() {
+  try {
+    const res = await fetch(POLL_URL + "?session=" + encodeURIComponent(sessionId));
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data && data.reply) {
+      addMsg("human", data.reply, "Support team");
+      if (!chat.classList.contains("open")) launcher.classList.add("unread");
+    }
+  } catch { /* network blip: try again next tick */ }
+}
+
+function startPolling() {
+  pollUntil = Date.now() + POLL_MAX_MS;
+  if (pollTimer) return;
+  pollTimer = setInterval(() => {
+    if (Date.now() > pollUntil) { clearInterval(pollTimer); pollTimer = null; return; }
+    if (!document.hidden) pollOnce();
+  }, POLL_EVERY_MS);
+}
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = ""; sendBtn.disabled = true;
+  addMsg("user", text);
+  const botBody = addMsg("bot", "…");
+  try {
+    const full = await askBot(text, (t) => { botBody.textContent = t; log.scrollTop = log.scrollHeight; });
+    if (!full) botBody.textContent = "(no response)";
+  } catch (err) {
+    botBody.textContent = "Sorry, something went wrong. Please try again.";
+  } finally {
+    sendBtn.disabled = false; if (chat.classList.contains("open")) input.focus();
+    startPolling(); // a human reply may arrive later
+  }
+});
+
+addMsg("bot", "Hi there! How can I help you today?");
+</script>
+</body>
+</html>
