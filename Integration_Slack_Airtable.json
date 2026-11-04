@@ -1,0 +1,450 @@
+{
+  "name": "WF-01 Intake & Routing (basic intake)",
+  "nodes": [
+    {
+      "parameters": {
+        "trigger": [
+          "message"
+        ],
+        "watchWorkspace": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.slackTrigger",
+      "typeVersion": 1,
+      "position": [
+        -960,
+        -128
+      ],
+      "id": "cc105e14-1037-462b-9ed9-d48872a8e07e",
+      "name": "Slack Trigger",
+      "webhookId": "6f1c2d10-1a01-4b0e-9a11-0000000000a1",
+      "credentials": {
+        "slackApi": {
+          "id": "N7UG4SssJVXweZ6Z",
+          "name": "Slack account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c1000000-0000-4000-8000-000000000001",
+              "leftValue": "={{ $json.channel_type }}",
+              "rightValue": "im",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "c1000000-0000-4000-8000-000000000002",
+              "leftValue": "={{ $json.bot_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "c1000000-0000-4000-8000-000000000003",
+              "leftValue": "={{ $json.subtype }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "c1000000-0000-4000-8000-000000000004",
+              "leftValue": "={{ $json.text }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -736,
+        -128
+      ],
+      "id": "cf943de6-f28c-450f-a63c-6471b9313f18",
+      "name": "Valid DM?"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1000000-0000-4000-8000-000000000001",
+              "name": "slack_user_id",
+              "value": "={{ $json.user }}",
+              "type": "string"
+            },
+            {
+              "id": "a1000000-0000-4000-8000-000000000002",
+              "name": "slack_message_ts",
+              "value": "={{ $json.ts }}",
+              "type": "string"
+            },
+            {
+              "id": "a1000000-0000-4000-8000-000000000003",
+              "name": "slack_channel",
+              "value": "={{ $json.channel }}",
+              "type": "string"
+            },
+            {
+              "id": "a1000000-0000-4000-8000-000000000004",
+              "name": "description",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "a1000000-0000-4000-8000-000000000005",
+              "name": "request_id",
+              "value": "=REQ-{{ $json.user }}-{{ $json.ts }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -512,
+        -128
+      ],
+      "id": "7fc59cc7-d12a-4099-9ab0-26e04d26fafc",
+      "name": "Extract Fields"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "app280SkIFj8sPhZo"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tbl2QY27S7LVlXgLT"
+        },
+        "filterByFormula": "={{ \"{request_id}='\" + $json.request_id + \"'\" }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        -288,
+        -128
+      ],
+      "id": "2d206584-9d10-4821-8e90-a52d6bbd3348",
+      "name": "Find Existing Request",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "2ByWh8bfeprzcd6c",
+          "name": "Airtable Personal Access Token account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c2000000-0000-4000-8000-000000000001",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -64,
+        -128
+      ],
+      "id": "c6b62e16-51ac-403e-a4db-eed082035c40",
+      "name": "Is New Request?"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "app280SkIFj8sPhZo"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tbl2QY27S7LVlXgLT"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "request_id": "={{ $('Extract Fields').item.json.request_id }}",
+            "slack_user_id": "={{ $('Extract Fields').item.json.slack_user_id }}",
+            "slack_message_ts": "={{ $('Extract Fields').item.json.slack_message_ts }}",
+            "description": "={{ $('Extract Fields').item.json.description }}",
+            "status": "NEW"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "request_id",
+              "displayName": "request_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "slack_user_id",
+              "displayName": "slack_user_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "slack_message_ts",
+              "displayName": "slack_message_ts",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "NEW",
+                  "value": "NEW"
+                },
+                {
+                  "name": "AI_IN_PROGRESS",
+                  "value": "AI_IN_PROGRESS"
+                },
+                {
+                  "name": "AWAITING_FEEDBACK",
+                  "value": "AWAITING_FEEDBACK"
+                },
+                {
+                  "name": "AWAITING_ESCALATION",
+                  "value": "AWAITING_ESCALATION"
+                },
+                {
+                  "name": "TICKET_CREATED",
+                  "value": "TICKET_CREATED"
+                },
+                {
+                  "name": "RESOLVED",
+                  "value": "RESOLVED"
+                },
+                {
+                  "name": "CLOSED_NO_TICKET",
+                  "value": "CLOSED_NO_TICKET"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        160,
+        -128
+      ],
+      "id": "fa1d647c-8923-448d-9aa2-475cec52e1ec",
+      "name": "Create Support Request",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "2ByWh8bfeprzcd6c",
+          "name": "Airtable Personal Access Token account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Extract Fields').item.json.slack_channel }}"
+        },
+        "messageType": "block",
+        "blocksUi": "={{ JSON.stringify({ blocks: [ { type: 'section', text: { type: 'mrkdwn', text: 'Your request was registered (*' + $('Extract Fields').item.json.request_id + '*). How would you like to continue?' } }, { type: 'actions', block_id: 'intake_choice', elements: [ { type: 'button', action_id: 'ai_choice', text: { type: 'plain_text', text: 'Try AI assistance' }, value: $('Extract Fields').item.json.request_id }, { type: 'button', action_id: 'ticket_choice', text: { type: 'plain_text', text: 'Create ticket' }, value: $('Extract Fields').item.json.request_id } ] } ] }) }}",
+        "text": "Your request was registered. Choose how to continue.",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        384,
+        -128
+      ],
+      "id": "39f8e5fd-364b-4648-b8fd-d958c146c4db",
+      "name": "Send Choice Buttons",
+      "webhookId": "5c2aa9ae-0309-4bf2-9fa2-ef824f567a11",
+      "credentials": {
+        "slackApi": {
+          "id": "N7UG4SssJVXweZ6Z",
+          "name": "Slack account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Slack Trigger": {
+      "main": [
+        [
+          {
+            "node": "Valid DM?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valid DM?": {
+      "main": [
+        [
+          {
+            "node": "Extract Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Fields": {
+      "main": [
+        [
+          {
+            "node": "Find Existing Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Existing Request": {
+      "main": [
+        [
+          {
+            "node": "Is New Request?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is New Request?": {
+      "main": [
+        [
+          {
+            "node": "Create Support Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Support Request": {
+      "main": [
+        [
+          {
+            "node": "Send Choice Buttons",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "19c8a17a-41f3-4e11-99cf-7cb36a0a6916",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "49b42c0051ee1c04693c425c4d57eeb1072531f55d1515f0d9aeb5a5977f030a"
+  },
+  "id": "jASFLNZohRSSqw45",
+  "tags": []
+}
