@@ -1,0 +1,138 @@
+{
+  "name": "Bakery Orders -Telegram to Notion",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "5f826427-3ba1-49f7-b049-68d10574e71c",
+      "name": "Telegram Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4030c306-cb12-4fdf-9644-ba23aa9e19b8",
+              "name": "Name",
+              "value": "={{ $json.message.from.first_name }}",
+              "type": "string"
+            },
+            {
+              "id": "1ac57b82-4b59-4822-b269-c2c9f1468a9d",
+              "name": "Username",
+              "value": "={{ $json.message.from.username ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "8bcf9d65-824b-4ab1-86b4-55b377372362",
+              "name": "Message",
+              "value": "={{ $json.message.text }}",
+              "type": "string"
+            },
+            {
+              "id": "14701af3-b2b1-4462-a466-20612034c45a",
+              "name": "Chat ID",
+              "value": "={{ String($json.message.chat.id) }}",
+              "type": "string"
+            },
+            {
+              "id": "f96394d7-aa4f-40c4-ab06-a5154cdb5fca",
+              "name": "Timestamp",
+              "value": "={{ DateTime.fromSeconds($json.message.date, { zone: 'utc' }).toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "fea395b0-d8fe-4c2b-8fa7-fbdb74caed38",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "00000000-0000-0000-0000-000000000000",
+          "mode": "id"
+        },
+        "title": "={{ $json.Name }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Username|rich_text",
+              "textContent": "={{ $json.Username }}"
+            },
+            {
+              "key": "Message|rich_text",
+              "textContent": "={{ $json.Message }}"
+            },
+            {
+              "key": "Chat ID|rich_text",
+              "textContent": "={{ $json['Chat ID'] }}"
+            },
+            {
+              "key": "Timestamp|date",
+              "date": "={{ $json.Timestamp }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "43be89e9-6e82-47d3-8ada-177d43097603",
+      "name": "Create a database page"
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Create a database page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "tags": []
+}
