@@ -1,0 +1,59 @@
+{
+  "name": "Error alerts",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "5e0abb22-11c7-4d19-8053-2e2be68bfa81",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        -176
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "<OWNER_CHAT_ID>",
+        "text": "=⚠️ {{ $json.workflow.name }} failed at {{ $json.execution.lastNodeExecuted }}: {{ $json.execution.error.message }}\n{{ $json.execution.url }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "04f01511-58e7-4062-9728-ab2f8a4cd375",
+      "name": "Telegram: alert me",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -400,
+        -176
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "<CREDENTIAL_ID>",
+          "name": "Telegram - Order Chat Bot - ayhandemir"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Telegram: alert me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "tags": []
+}

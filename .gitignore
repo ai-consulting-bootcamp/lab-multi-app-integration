@@ -1,0 +1,5 @@
+.env
+
+# Separate project with its own repo (github.com/ayhandemir7-LSSBB/job-search-score-apply-bot)
+job-search-score-apply-bot/
+job-match-studio/
